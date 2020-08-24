@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>作业提交情况</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css">
+  <link rel="stylesheet" href="../../../resources/css/global.css">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black">
+  <div class="layui-container">
+    <a class="fly-logo">
+      <img src="../../../resources/img/logo.png" alt="layui">
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li class="layui-nav-item layui-this">
+        <a class="teacher-index"><i class="iconfont icon-jiaoliu"></i>作业管理系统-教师界面</a>
+      </li>
+    </ul>
+    <ul class="layui-nav fly-nav-user">
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" id="cite-name"></cite>
+          <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：教师"></i>
+          <img src="" alt="" id="profileImg">
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="/teacher/set"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd><a class="teacher-index"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a href="/home/logout" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="layui-hide-xs">
+  <div class="fly-panel fly-column">
+    <div class="layui-container">
+      <ul class="layui-clear">
+        <li><a class="teacher-index">首页</a></li>
+        <li><a href="/teacher/course">授课列表</a></li>
+        <li><a id="listHomework">作业列表</a></li>
+        <li class="layui-this"><a href="/teacher/studentHomeworkList">作业提交情况</a></li>
+        <li class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><span class="fly-mid"></span></li>
+      </ul>
+
+      <div class="fly-column-right layui-hide-xs">
+        <a href="/teacher/add" class="layui-btn">发布作业</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="layui-container fly-marginTop">
+  <div class="layui-row layui-col-space15">
+
+    <div class="layui-col-md12">
+      <div class="fly-panel detail-box">
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+          <legend>作业提交情况统计</legend>
+        </fieldset>
+        <div class="layui-collapse" lay-accordion id="course-list">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="fly-footer">
+  <p>作业管理系统 2020 &copy; <a target="_blank">By YSP</a></p>
+</div>
+
+<script src="../../../resources/layuiadmin/layui/layui.js"></script>
+<script src="../../../resources/js/common.js"></script>
+<script>
+  layui.use(['element'], function(){
+    var $ = layui.jquery;
+
+    //访问后台，获取教师信息
+    $.getJSON('/teacher/getTeacherInfo', function(data) {
+      if (data.success) {
+        //获取后台传递过来的教师信息
+        var teacher = data.teacher;
+
+        //判断从后台传入的图片流是否为空，
+        //如果为空，给img标签添加noImage的图片路径
+        //如果不为空，给img标签添加后台传入的图片路径
+        if (teacher.profileImg != null){
+          $('#profileImg').attr('src', teacher.profileImg);
+        }else {
+          $('#profileImg').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+        }
+
+        //根据name、Id或Class名称为相应标签里的内容添加值
+        //html-替换标签里的内容
+        //append-在标签原有内容的末尾添加新的内容
+        //attr-给标签添加新的属性值
+        $('#cite-name').html(teacher.teacherName);
+        $('#listHomework').attr('href', '/teacher/homework?teacherId=' + teacher.teacherId);
+        $('.teacher-index').attr('href', '/teacher/index?teacherId=' + teacher.teacherId);
+      }
+    });
+
+    //访问后台，获取课程列表
+    $.getJSON('/teacher/listCourseMap', function(data) {
+      if (data.success) {
+        // 若访问成功，则依据后台传递过来的课程信息动态拼接html
+        data.courseList.map(function (item) {
+          var tempHtml = '';
+          tempHtml += ''
+                  + '<div class="layui-colla-item">'
+                  + '<h2 class="layui-colla-title">'
+                  + item.courseName
+                  + '</h2>'
+                  + '<div class="layui-colla-content">'
+                  + '<div class="layui-tab layui-tab-card">'
+                  + '<ul class="layui-tab-title" id="'
+                  + item.courseId + '-1'+'">'
+                  + '</ul>'
+                  + '<div class="layui-tab-content" id="'
+                  + item.courseId + '-2' +'">'
+                  + '</div>'
+                  + '</div>'
+                  + '</div>'
+                  + '</div>';
+
+          $('#course-list').append(tempHtml);
+          getHomeworkList(item.courseId);
+        });
+
+        layui.element.render();
+      }
+    });
+
+    //根据传入的课程ID获取作业列表
+    function getHomeworkList(courseId){
+      $.get('/teacher/listHomeworkMapByCourseId?courseId=' + courseId, function(data) {
+        if (data.success){
+          var count = 0;
+          // 若访问成功，则依据后台传递过来的信息动态拼接html
+          data.homeworkList.map(function (item) {
+            var tempHtml1 = '';
+            var tempHtml2 = '';
+
+            if (count === 0){
+              tempHtml1 += ''
+                      + '<li class="layui-this">'
+                      + item.homeworkName
+                      + '</li>';
+              tempHtml2 += ''
+                      + '<div class="layui-tab-item layui-show">'
+                      + '<table class="layui-table">'
+                      + '<colgroup>'
+                      + '<col width="150"><col width="200"><col><col><col width="200">'
+                      + '</colgroup>'
+                      + '<thead>'
+                      + '<tr>'
+                      + '<th>学号</th><th>姓名</th><th>邮箱</th><th>作业提交状态</th><th></th>'
+                      + '</tr>'
+                      + '</thead>'
+                      + '<tbody id="'
+                      + item.homeworkId + '-table' +'">'
+                      + '</tbody>'
+                      + '</div>';
+              count ++;
+            }else {
+              tempHtml1 += ''
+                      + '<li>'
+                      + item.homeworkName
+                      + '</li>';
+              tempHtml2 += ''
+                      + '<div class="layui-tab-item">'
+                      + '<table class="layui-table">'
+                      + '<colgroup>'
+                      + '<col width="150"><col width="200"><col><col><col width="200">'
+                      + '</colgroup>'
+                      + '<thead>'
+                      + '<tr>'
+                      + '<th>学号</th><th>姓名</th><th>邮箱</th><th>作业提交状态</th><th></th>'
+                      + '</tr>'
+                      + '</thead>'
+                      + '<tbody id="'
+                      + item.homeworkId + '-table' +'">'
+                      + '</tbody>'
+                      + '</div>';
+            }
+            $('#'+ courseId + '-1').append(tempHtml1);
+            $('#'+ courseId + '-2').append(tempHtml2);
+
+            getStudentList(courseId,item.homeworkId);
+          });
+        }
+      });
+    }
+
+    //根据传入的课程ID选择该课程获取学生列表
+    function getStudentList(courseId,homeworkId){
+      $.get('/teacher/listStudentMapByCourseId?courseId=' + courseId, function(data) {
+        if (data.success){
+          // 若访问成功，则依据后台传递过来的信息动态拼接html
+          data.studentCourseList.map(function (item) {
+            var tempHtml = '';
+            tempHtml += ''
+                    + '<tr>'
+                    + '<td>' + item.student.studentId + '</td>'
+                    + '<td>' + item.student.studentName + '</td>'
+                    + '<td>' + item.student.email + '</td>'
+                    + '<td id="ifSubmit-'
+                    + item.student.studentId + '-' + homeworkId
+                    + '">'
+                    + '</td>'
+                    + '<td id="detail-'
+                    + item.student.studentId + '-' + homeworkId
+                    + '">'
+                    + '</td>'
+                    + '</tr>';
+
+            $('#'+ homeworkId + '-table').append(tempHtml);
+
+            ifSubmit(homeworkId,item.student.studentId);
+          });
+        }
+      });
+    }
+
+    //通过作业ID和学生ID判断该学生是否提交了作业
+    function ifSubmit(homeworkId,studentId){
+      $.get('/teacher/getStudentHomeworkByCondition?homeworkId='+homeworkId+'&studentId='+studentId, function(data) {
+        if (data.success){
+          var tempHtml1 = '';
+          var tempHtml2 = '';
+          var studentHomework = data.studentHomework;
+          tempHtml1 = '<button type="button" class="layui-btn layui-btn-sm layui-btn-radius">'
+                  + '已提交'
+                  + '</button>';
+          tempHtml2 = '<button type="button" class="layui-btn layui-btn-normal">'
+                  + '<a class="layui-bg-blue" href="'
+                  + '/teacher/studentHomeworkInfo?studentHomeworkId='
+                  + studentHomework.studentHomeworkId
+                  + '">'
+                  + '<i class="layui-icon">&#xe60a;</i> 查看详情'
+                  + '</a>'
+                  + '</button>';
+
+          $('#ifSubmit-'+ studentId + '-' + homeworkId).append(tempHtml1);
+          $('#detail-'+ studentId+ '-' + homeworkId).append(tempHtml2);
+        }else {
+          var tempHtml = '';
+          tempHtml = '<button type="button" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-warm">'
+                  + '未提交'
+                  + '</button>';
+
+          $('#ifSubmit-'+ studentId+ '-' + homeworkId).append(tempHtml);
+          $('#detail-'+ studentId+ '-' + homeworkId).append('未提交，无法查看');
+        }
+      });
+    }
+
+  });
+</script>
+
+</body>
+</html>

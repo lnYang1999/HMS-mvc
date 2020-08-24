@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>用户主页</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../../../resources/css/global.css" media="all">
+</head>
+<body style="margin-top: 65px;">
+
+<div class="fly-header layui-bg-black">
+  <div class="layui-container">
+    <a class="fly-logo">
+      <img src="../../../resources/img/logo.png" alt="layui">
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li class="layui-nav-item layui-this">
+        <a class="teacher-index"><i class="iconfont icon-jiaoliu"></i>作业管理系统-教师界面</a>
+      </li>
+    </ul>
+    <ul class="layui-nav fly-nav-user">
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" id="cite-name1"></cite>
+          <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：教师"></i>
+          <img src="" alt="" id="profileImg1">
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="/teacher/set"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd><a class="teacher-index"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a href="/home/logout" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="layui-hide-xs">
+  <div class="fly-panel fly-column">
+    <div class="layui-container">
+      <ul class="layui-clear">
+        <li class="layui-this"><a class="teacher-index">首页</a></li>
+        <li><a href="/teacher/course">授课列表</a></li>
+        <li><a id="listHomework">作业列表</a></li>
+        <li><a href="/teacher/studentHomeworkList">作业提交情况</a></li>
+        <li class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><span class="fly-mid"></span></li>
+      </ul>
+
+      <div class="fly-column-right layui-hide-xs">
+        <a href="/teacher/add" class="layui-btn">发布作业</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fly-home fly-panel">
+  <img src="" alt="" id="profileImg2">
+  <i class="iconfont icon-renzheng" title="认证信息：教师"></i>
+  <h1 id="cite-name2">
+  </h1>
+
+  <p style="padding: 10px 0; color: #5FB878;">认证信息：教师</p>
+
+  <p class="fly-home-info">
+    <i class="iconfont layui-icon-release"></i><span id="emailInfo"></span>
+  </p>
+
+  <p class="fly-home-sign" id="teacherDesc"></p>
+</div>
+
+<div class="layui-container">
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md6 fly-home-jie">
+      <div class="fly-panel">
+        <h3 class="fly-panel-title">授课列表</h3>
+        <ul class="jie-row" id="course-list">
+        </ul>
+      </div>
+    </div>
+    
+    <div class="layui-col-md6 fly-home-da">
+      <div class="fly-panel">
+        <h3 class="fly-panel-title">学生提交作业情况</h3>
+        <ul class="home-jieda" id="studentHomework-list">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer">
+  <p>作业管理系统 2020 &copy; <a target="_blank">By YSP</a></p>
+</div>
+
+<script src="../../../resources/layuiadmin/layui/layui.js"></script>
+<script src="../../../resources/layuiadmin/modules/timeago.js"></script>
+<script src="../../../resources/js/common.js"></script>
+<script>
+  layui.config({
+    version: true,
+    base:  '../../../resources/layuiadmin/modules/'
+  }).extend({
+    timeago: 'timeago'
+  }).use(['element', 'timeago'], function(){
+    var $ = layui.jquery
+        ,timeago = layui.timeago;
+
+    //获取一段url中的字段
+    //如loacalhost:8080?courseId=1，getQueryString('courseId')则获取url中courseId的值
+    var teacherId = getQueryString('teacherId');
+
+    //访问后台，获取教师信息
+    $.getJSON('/teacher/getTeacherInfo', function(data) {
+      if (data.success) {
+        //获取后台传递过来的教师信息
+        var teacher = data.teacher;
+
+        //判断从后台传入的图片流是否为空，
+        //如果为空，给img标签添加noImage的图片路径
+        //如果不为空，给img标签添加后台传入的图片路径
+        if (teacher.profileImg != null){
+          $('#profileImg1').attr('src', teacher.profileImg);
+          $('#profileImg2').attr('src', teacher.profileImg);
+        }else {
+          $('#profileImg1').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+          $('#profileImg2').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+        }
+
+        //根据name、Id或Class名称为相应标签里的内容添加值
+        //html-替换标签里的内容
+        //append-在标签原有内容的末尾添加新的内容
+        //attr-给标签添加新的属性值
+        $('#cite-name1').html(teacher.teacherName);
+        $('#emailInfo').html(teacher.email);
+        $('#teacherDesc').html(teacher.teacherDesc);
+        if (teacher.gender === '男'){
+          $('#cite-name2').html(teacher.teacherName+'<i class="iconfont icon-nan"></i>');
+        }
+        if (teacher.gender === '女'){
+          $('#cite-name2').html(teacher.teacherName+'<i class="iconfont icon-nv"></i>');
+        }
+        $('#listHomework').attr('href', '/teacher/homework?teacherId=' + teacher.teacherId);
+        $('.teacher-index').attr('href', '/teacher/index?teacherId=' + teacher.teacherId);
+      }
+    });
+
+    //访问后台，获取课程列表
+    $.getJSON('/teacher/listCourseMap', function(res) {
+      if (res.success){
+        var tempHtml = '';
+        res.courseList.map(function (item) {
+          tempHtml += ''
+                  + '<li>'
+                  + '<a href="/teacher/courseInfo?courseId='
+                  + item.courseId
+                  + '" class="jie-title">'
+                  + item.courseName
+                  + '</a>'
+                  + '<i>'
+                  + item.courseSize
+                  + ' 人'
+                  + '</i>'
+                  + '</li>'
+        });
+        $('#course-list').append(tempHtml);
+      }
+    });
+
+    //访问后台，获取学生作业列表
+    $.getJSON('/teacher/listStudentHomeworkMap?teacherId=' + teacherId, function(res) {
+      if (res.success){
+        var tempHtml = '';
+        res.studentHomeworkList.map(function (item) {
+          tempHtml += ''
+                  + '<li>'
+                  + '<p>'
+                  + '<span class="createTime" datetime="'
+                  + item.createTime
+                  + '"></span>'
+                  + '<span>'
+                  + item.student.studentName
+                  + '</span>'
+                  + '提交了'
+                  + '<a href="/teacher/studentHomeworkInfo?studentHomeworkId='
+                  + item.studentHomeworkId
+                  + '">'
+                  + item.homework.homeworkName
+                  + '</a>'
+                  + '</p>'
+                  + '</li>'
+                  + '<hr class="layui-bg-blue">'
+        });
+        $('#studentHomework-list').append(tempHtml);
+        timeago.render($('.createTime'));
+      }
+    });
+
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>学生作业列表</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+
+  <div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+      <a lay-href="">主页</a>
+      <a><cite>组件</cite></a>
+      <a><cite>数据表格</cite></a>
+      <a><cite>数据操作</cite></a>
+    </div>
+  </div>
+  
+  <div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">学生提交作业列表</div>
+          <div class="layui-card-body">
+            <table class="layui-hide" id="studentHomework-list" lay-filter="studentHomework-list"></table>
+            
+            <script type="text/html" id="operation">
+              <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../resources/layuiadmin/layui/layui.js"></script>
+  <script src="../../../resources/js/common.js"></script>
+  <script>
+  layui.config({
+    base: '../../../resources/layuiadmin/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index' //主入口模块
+  }).use(['index', 'table'], function(){
+    var table = layui.table
+    ,$ = layui.$
+    ,layer = layui.layer;
+
+    table.render({
+      elem: '#studentHomework-list'
+      ,id: 'studentHomeworkTable'
+      ,url: '/admin/listStudentHomework'
+      ,cols: [[
+         {field: 'studentHomeworkId', width: 120, title: '学生作业ID号', sort: true, fixed: 'left'}
+        ,{title: '作业ID号', width: 120, sort: true, templet: function(data){
+            return data.homework.homeworkId;
+          }}
+        ,{title: '作业名', width: 120, sort: true, templet: function(data){
+            return data.homework.homeworkName;
+          }}
+        ,{title: '学生ID号', width: 120, sort: true, templet: function(data){
+            return data.student.studentId;
+          }}
+        ,{title: '学生姓名', width: 120, sort: true, templet: function(data){
+            return data.student.studentName;
+          }}
+        ,{field: 'submitContent', width: 250, title: '提交内容'}
+        ,{field: 'submitFile', title: '提交文件', width: 120, templet: function(res){
+            return '<button type="button" class="layui-btn layui-btn-normal layui-btn-sm" lay-href="/admin/downloadStudentHomework?studentHomeworkId='+ res.studentHomeworkId +'"><i class="layui-icon layui-icon-download-circle"></i></button>';
+          }}
+        ,{title: '创建时间', width: 120, templet: function(res){
+            return new Date(res.createTime).Format("yyyy-MM-dd");
+          }}
+        ,{title: '最近一次更新时间', width: 160, templet: function(res){
+            if (res.lastEditTime != null){
+              return new Date(res.lastEditTime).Format("yyyy-MM-dd");
+            }else {
+              return "暂未更新";
+            }
+          }}
+        ,{fixed: 'right', title: '操作', toolbar: '#operation', width: 150}
+      ]]
+      ,page: true
+    });
+
+    //监听工具条
+    table.on('tool(studentHomework-list)', function(obj){
+      var data = obj.data;
+      if(obj.event === 'del'){
+        layer.confirm('真的删除行么', function(index){
+          delStudentHomeworkById(data.studentHomeworkId);
+          layer.close(index);
+        });
+      }
+    });
+
+    //删除记录
+    function delStudentHomeworkById(id) {
+      $.get("/admin/deleteStudentHomework?studentHomeworkId=" + id,
+              function(res) {
+                if(res.success){
+                  layer.msg('删除成功');
+                  table.reload('studentHomeworkTable', {//studentHomeworkTable是组件名称,表格名
+                    page: {//page参数是指重新刷新后从第几页开始
+                      curr: 1 //重新从第 1 页开始
+                    }
+                  }, 'data');//data是默认值
+                }
+              });
+    }
+  
+  });
+  </script>
+</body>
+</html>

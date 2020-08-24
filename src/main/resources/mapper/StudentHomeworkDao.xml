@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjtu.edu.dao.StudentHomeworkDao">
+    <resultMap id="studentHomeworkMap" type="com.bjtu.edu.entity.StudentHomework">
+        <id column="student_homework_id" property="studentHomeworkId"/>
+        <result column="submit_content" property="submitContent"/>
+        <result column="submit_file" property="submitFile"/>
+        <result column="create_time" property="createTime"/>
+        <result column="last_edit_time" property="lastEditTime"/>
+        <association property="homework" column="homework_id" javaType="com.bjtu.edu.entity.Homework">
+            <id column="homework_id" property="homeworkId"/>
+            <result column="homework_name" property="homeworkName"/>
+            <result column="homework_desc" property="homeworkDesc"/>
+            <result column="course_id" property="course.courseId"/>
+            <result column="course_name" property="course.courseName"/>
+            <result column="teacher_id" property="course.teacher.teacherId"/>
+        </association>
+        <association property="student" column="student_id" javaType="com.bjtu.edu.entity.Student">
+            <id column="student_id" property="studentId"/>
+            <result column="student_name" property="studentName"/>
+        </association>
+    </resultMap>
+
+    <select id="queryStudentHomework" resultMap="studentHomeworkMap">
+        SELECT
+            sh.student_homework_id, h.homework_id, h.homework_name, s.student_id, s.student_name, sh.submit_content, sh.submit_file, sh.create_time, sh.last_edit_time
+        FROM
+            student_homework sh ,
+            homework h ,
+            student s
+        WHERE
+            sh.homework_id = h.homework_id AND sh.student_id = s.student_id
+    </select>
+
+    <select id="queryStudentHomeworkById" resultMap="studentHomeworkMap" parameterType="Long">
+        SELECT
+            sh.student_homework_id, h.homework_id, h.homework_name, h.homework_desc, c.course_id, c.course_name, s.student_id, s.student_name, sh.submit_content, sh.submit_file, sh.create_time, sh.last_edit_time
+        FROM
+            student_homework sh ,
+            homework h ,
+            student s ,
+            course c
+        WHERE
+            sh.student_homework_id = #{studentHomeworkId} AND sh.homework_id = h.homework_id AND sh.student_id = s.student_id AND h.course_id = c.course_id
+    </select>
+
+    <select id="queryStudentHomeworkByCourseId" resultMap="studentHomeworkMap">
+        SELECT
+            sh.student_homework_id, h.homework_id, h.homework_name, s.student_id, s.student_name, s.email, sh.submit_content, sh.submit_file, sh.create_time, sh.last_edit_time
+        FROM
+            student_homework sh ,
+            homework h ,
+            student s
+        WHERE
+            h.course_id = #{homework.course.courseId} AND sh.homework_id = h.homework_id AND sh.student_id = s.student_id
+    </select>
+
+    <select id="queryStudentHomeworkByTeacherId" resultMap="studentHomeworkMap">
+        SELECT
+            sh.student_homework_id, h.homework_name, s.student_name, sh.submit_content, sh.create_time
+        FROM
+            student_homework sh ,
+            homework h ,
+            student s ,
+            course c
+        WHERE
+          c.teacher_id = #{homework.course.teacher.teacherId}
+          AND sh.homework_id = h.homework_id
+          AND sh.student_id = s.student_id
+          AND h.course_id = c.course_id
+    </select>
+
+    <select id="queryStudentHomeworkExist" resultType="int">
+        SELECT count(1) FROM student_homework
+        <where>
+            <if
+                    test="studentHomeworkCondition.student!=null
+				 and studentHomeworkCondition.student.studentId!=null">
+                and student_id = #{studentHomeworkCondition.student.studentId}
+            </if>
+            <if
+                    test="studentHomeworkCondition.homework!=null
+				 and studentHomeworkCondition.homework.homeworkId!=null">
+                and homework_id = #{studentHomeworkCondition.homework.homeworkId}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryStudentHomeworkByCondition" resultMap="studentHomeworkMap">
+        SELECT student_homework_id FROM student_homework
+        <where>
+            <if
+                    test="studentHomeworkCondition.student!=null
+				 and studentHomeworkCondition.student.studentId!=null">
+                and student_id = #{studentHomeworkCondition.student.studentId}
+            </if>
+            <if
+                    test="studentHomeworkCondition.homework!=null
+				 and studentHomeworkCondition.homework.homeworkId!=null">
+                and homework_id = #{studentHomeworkCondition.homework.homeworkId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="addStudentHomework" useGeneratedKeys="true" keyColumn="student_homework_id" keyProperty="studentHomeworkId">
+        INSERT INTO
+            student_homework
+        (student_homework_id, homework_id, student_id, submit_content, submit_file, create_time)
+        VALUES
+        (#{studentHomeworkId},#{homework.homeworkId},#{student.studentId},#{submitContent},#{submitFile},#{createTime})
+    </insert>
+
+    <update id="modifyStudentHomework" parameterType="com.bjtu.edu.entity.StudentHomework">
+        UPDATE student_homework
+        <set>
+            <if test="homework != null">homework_id=#{homework.homeworkId},</if>
+            <if test="student != null">student_id=#{student.studentId},</if>
+            <if test="submitContent != null">submit_content=#{submitContent},</if>
+            <if test="submitFile != null">submit_file=#{submitFile},</if>
+            <if test="lastEditTime != null">last_edit_time=#{lastEditTime},</if>
+        </set>
+        where student_homework_id=#{studentHomeworkId}
+    </update>
+
+    <delete id="deleteStudentHomework">
+        DELETE FROM
+            student_homework
+        WHERE
+            student_homework_id = #{studentHomeworkId}
+    </delete>
+</mapper>

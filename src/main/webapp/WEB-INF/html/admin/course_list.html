@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>课程列表</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+
+  <div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+      <a lay-href="">主页</a>
+      <a><cite>组件</cite></a>
+      <a><cite>数据表格</cite></a>
+      <a><cite>开启头部工具栏</cite></a>
+    </div>
+  </div>
+  
+  <div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">课程信息列表</div>
+          <div class="layui-card-body">
+            <table class="layui-hide" id="course-list" lay-filter="course-list"></table>
+             
+            <script type="text/html" id="operation">
+              <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+              <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../../../resources/layuiadmin/layui/layui.js"></script>
+  <script src="../../../resources/js/common.js"></script>
+  <script>
+  layui.config({
+    base: '../../../resources/layuiadmin/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index' //主入口模块
+  }).use(['index', 'table', 'form'], function(){
+    var table = layui.table
+    ,$ = layui.$
+    ,form = layui.form
+    ,layer = layui.layer;
+
+    /* 自定义验证规则 */
+    form.verify({
+      courseName: function(value){
+        if(containsNumber(value) === true){
+          return '课程名不能含有数字';
+        }
+      }
+    });
+  
+    table.render({
+      elem: '#course-list'
+      ,id: 'courseTable'
+      ,url: '/admin/listCourse'
+      ,toolbar: '#operation'
+      ,title: '课程信息列表'
+      ,cols: [[
+         {field:'courseId', title:'课程ID号', width:120, fixed: 'left', unresize: true, sort: true},
+         {field:'courseName', title:'课程名', width:140, sort: true},
+         {field:'courseSize', title:'课程容量', width:120},
+         {field:'courseDesc', title:'课程简介', width:250},
+         {title:'授课教授ID号', width:160, sort: true, templet: function(data){
+             return data.teacher.teacherId;
+           }},
+         {title:'授课教师姓名', width:160, sort: true, templet: function(data){
+             return data.teacher.teacherName;
+           }},
+         {title:'创建时间', width:120, templet: function(res){
+             return new Date(res.createTime).Format("yyyy-MM-dd");
+        }},
+         {title:'最近一次更新时间', width:160, templet: function(res){
+             if (res.lastEditTime != null){
+               return new Date(res.lastEditTime).Format("yyyy-MM-dd");
+             }else {
+               return "暂未更新";
+             }
+         }},
+         {fixed: 'right', title:'操作', toolbar: '#operation', width:150}
+      ]]
+      ,page: true
+    });
+    
+    //监听行工具事件
+    table.on('tool(course-list)', function(obj){
+      var data = obj.data;
+      if(obj.event === 'del'){
+        layer.confirm('确定要删除吗', function(index){
+          delCourseById(data.courseId);
+          layer.close(index);
+        });
+      } else if(obj.event === 'edit'){
+        layer.open({
+          //layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）
+          type: 1,
+          title: "修改课程信息",
+          area: ['600px', '400px'],
+          content: $("#popUpdateCourse")//引用的弹出层的页面层的方式加载修改界面表单
+      });
+        //动态向表传递赋值可以参看文章进行修改界面的更新前数据的显示，当然也是异步请求的要数据的修改数据的获取
+        setFormValue(obj,data);
+      }
+    });
+
+    //删除记录
+    function delCourseById(id) {
+      $.get("/admin/deleteCourse?courseId=" + id,
+              function(res) {
+                if(res.success){
+                  layer.msg('删除成功');
+                  table.reload('courseTable', {//courseTable是组件名称,表格名
+                    page: {//page参数是指重新刷新后从第几页开始
+                      curr: 1 //重新从第 1 页开始
+                    }
+                  }, 'data');//data是默认值
+                }
+              });
+    }
+
+    //监听弹出框表单提交，massage是修改界面的表单数据'submit(edit-course),是修改按钮的绑定
+    function setFormValue(obj,data){
+      getTeacherList();
+      $('input[name="courseId"]').val(data.courseId);
+      $('input[name="courseName"]').val(data.courseName);
+      $('input[name="courseSize"]').val(data.courseSize);
+      $('textarea[name="courseDesc"]').text(data.courseDesc);
+
+      form.on('submit(edit-course)', function() {
+        var course = {};
+
+        course.courseId = $('input[name="courseId"]').val();
+        course.courseName = $('input[name="courseName"]').val();
+        course.courseSize = $('input[name="courseSize"]').val();
+        course.courseDesc = $('textarea[name="courseDesc"]').val();
+        course.teacher = {
+          teacherId : $('#teacher').find('option').not(function () {
+            return !this.selected;
+          }).data('id')
+        };
+
+        var formData = new FormData();
+        formData.append('courseStr',JSON.stringify(course));
+
+        $.ajax({
+          url:'/admin/modifyCourse',
+          type:'post',
+          data:formData,
+          contentType : false,
+          processData : false,
+          cache : false,
+          success:function(res){
+            if (res.success){
+              layer.msg("修改课程信息成功");
+              table.reload('courseTable', {//courseTable是组件名称,表格名
+                page: {//page参数是指重新刷新后从第几页开始
+                  curr: 1 //重新从第 1 页开始
+                }
+              }, 'data');//data是默认值
+            }else {
+              layer.msg("修改课程信息失败" + res.errMsg);
+            }
+          }
+        })
+        return false;
+      })
+    }
+
+    // 获取教师列表
+    function getTeacherList(){
+      $.get('/admin/listTeacherMap', function(res) {
+        if (res.success){
+          var tempHtml = '';
+          //根据教师列表动态拼接html
+          res.teacherList.map(function (item, index) {
+            tempHtml += '<option data-id="' + item.teacherId + '">'
+                    + item.teacherName + '</option>';
+          });
+          $('#teacher').html(tempHtml);
+          form.render('select');
+        }
+      });
+    }
+  
+  });
+  </script>
+
+
+<!--这里是弹出层的表单信息-->
+<!--style是在本页隐藏，只有点击编辑才会弹出-->
+  <div class="layui-row" id="popUpdateCourse" style="display:none;">
+    <div class="layui-col-md10">
+      <form class="layui-form layui-from-pane" action="" style="margin-top:20px" lay-filter="modify-course">
+        <div class="layui-form-item">
+          <label class="layui-form-label">课程号</label>
+          <div class="layui-input-block">
+            <input type="text" name="courseId" autocomplete="off" class="layui-input" readonly>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">课程名</label>
+          <div class="layui-input-block">
+            <input type="text" name="courseName" lay-verify="required|courseName" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">课程容量</label>
+          <div class="layui-input-block">
+            <input type="text" name="courseSize" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+          <label class="layui-form-label">课程简介</label>
+          <div class="layui-input-block">
+            <textarea name="courseDesc" placeholder="请输入内容" class="layui-textarea"></textarea>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">授课教师</label>
+          <div class="layui-input-block">
+            <div class="layui-col-md6">
+              <select id="teacher">
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="layui-form-item layui-layout-admin">
+          <div class="layui-input-block">
+            <div class="layui-footer" style="left: 0;">
+              <button class="layui-btn" lay-submit="" lay-filter="edit-course">立即提交</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

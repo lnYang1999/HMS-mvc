@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>提交作业详情</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css">
+  <link rel="stylesheet" href="../../../resources/css/global.css">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black">
+  <div class="layui-container">
+    <a class="fly-logo">
+      <img src="../../../resources/img/logo.png" alt="layui">
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li class="layui-nav-item layui-this">
+        <a class="student-index"><i class="iconfont icon-jiaoliu"></i>作业管理系统-学生界面</a>
+      </li>
+    </ul>
+    <ul class="layui-nav fly-nav-user">
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" id="cite-name"></cite>
+          <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：学生"></i>
+          <img src="" alt="" id="profileImg">
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="/student/set"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd><a class="student-index"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a href="/home/logout" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="layui-hide-xs">
+  <div class="fly-panel fly-column">
+    <div class="layui-container">
+      <ul class="layui-clear">
+        <li><a class="student-index">首页</a></li>
+        <li><a href="/student/course">选课列表</a></li>
+        <li class="layui-this"><a class="studentHomework-list">作业提交情况</a></li>
+        <li class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><span class="fly-mid"></span></li>
+      </ul>
+
+      <div class="fly-column-right layui-hide-xs">
+        <a id="submit-homework" class="layui-btn">提交作业</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="layui-container fly-marginTop">
+  <span class="layui-breadcrumb">
+    <a class="studentHomework-list">作业提交情况</a>
+    <a><cite>提交作业详情</cite></a>
+  </span>
+  <div class="layui-row layui-col-space15">
+
+    <div class="layui-col-md12 content detail">
+      <div class="fly-panel detail-box">
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+          <legend id="course-name"></legend>
+        </fieldset>
+        <div class="fly-extend-banner fly-extend-banner-sm">
+          <h1 class="fly-extend-banner-title" id="homework-name"></h1>
+        </div>
+
+        <div class="detail-body">
+          <hr class="layui-bg-green">
+          <fieldset class="layui-elem-field">
+            <legend>提交内容</legend>
+            <div class="layui-field-box">
+              <p id="submit-content">
+              </p>
+            </div>
+          </fieldset>
+          <hr class="layui-bg-blue">
+          <fieldset class="layui-elem-field">
+            <legend>提交文件</legend>
+            <div class="layui-field-box">
+              <button type="button" class="layui-btn layui-btn-normal" id="submit-file">
+                <i class="layui-icon">&#xe601;</i> 下载
+              </button>
+            </div>
+          </fieldset>
+          <hr class="layui-bg-cyan">
+          <fieldset class="layui-elem-field">
+            <legend>最近一次更新时间</legend>
+            <div class="layui-field-box">
+              <p id="last-edit-time">
+              </p>
+            </div>
+          </fieldset>
+          <hr class="layui-bg-orange">
+          <fieldset class="layui-elem-field">
+            <legend>操作</legend>
+            <div class="layui-field-box">
+              <a id="modify-homework">
+                <button type="button" class="layui-btn layui-btn-warm">
+                  <i class="layui-icon">&#xe642;</i>修改
+                </button>
+              </a>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="fly-footer">
+  <p>作业管理系统 2020 &copy; <a target="_blank">By YSP</a></p>
+</div>
+
+<script src="../../../resources/layuiadmin/layui/layui.js"></script>
+<script src="../../../resources/js/common.js"></script>
+<script>
+  layui.use(['element', 'util'], function(){
+    var $ = layui.jquery, util = layui.util;
+    //获取一段url中的字段
+    //如loacalhost:8080?courseId=1，getQueryString('courseId')则获取url中courseId的值
+    var studentHomeworkId = getQueryString('studentHomeworkId');
+
+    $('#modify-homework').attr('href','/student/modifySubmitHomework?studentHomeworkId='+studentHomeworkId);
+
+    //访问后台，获取学生信息
+    $.getJSON('/student/getStudentInfo', function(data) {
+      if (data.success) {
+        //获取后台传递过来的教师信息
+        var student = data.student;
+
+        //判断从后台传入的图片流是否为空，
+        //如果为空，给img标签添加noImage的图片路径
+        //如果不为空，给img标签添加后台传入的图片路径
+        if (student.profileImg != null){
+          $('#profileImg').attr('src', student.profileImg);
+        }else {
+          $('#profileImg').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+        }
+
+        //根据name、Id或Class名称为相应标签里的内容添加值
+        //html-替换标签里的内容
+        //append-在标签原有内容的末尾添加新的内容
+        //attr-给标签添加新的属性值
+        $('#submit-homework').attr('href','/student/submit?studentId='+student.studentId);
+        $('#cite-name').html(student.studentName);
+        $('.studentHomework-list').attr('href','/student/studentHomeworkList?studentId=' + student.studentId);
+        $('.student-index').attr('href', '/student/index?studentId=' + student.studentId);
+      }
+    });
+
+    //访问后台，获取指定学生作业信息
+    $.getJSON('/student/getStudentHomeworkById?studentHomeworkId=' + studentHomeworkId, function(data) {
+      if (data.success) {
+        //获取后台传递过来的学生作业信息
+        var studentHomework = data.studentHomework;
+
+        $('#course-name').html('课程：'+studentHomework.homework.course.courseName);
+        $('#homework-name').html(studentHomework.homework.homeworkName);
+        $('#submit-content').html(studentHomework.submitContent);
+        $('#submit-file').attr('onclick', 'downloadStudentHomework('+ studentHomeworkId +')');
+        var lastEditTime;
+        if (studentHomework.lastEditTime == null){
+          lastEditTime = util.toDateString(studentHomework.createTime, "yyyy年MM月dd日 HH时mm分");
+        }else {
+          lastEditTime = util.toDateString(studentHomework.lastEditTime, "yyyy年MM月dd日 HH时mm分");
+        }
+        $('#last-edit-time').html(lastEditTime);
+      }
+    });
+
+  });
+</script>
+
+</body>
+</html>

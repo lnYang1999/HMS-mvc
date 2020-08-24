@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjtu.edu.dao.CourseDao">
+    <resultMap id="courseMap" type="com.bjtu.edu.entity.Course">
+        <id column="course_id" property="courseId"/>
+        <result column="course_name" property="courseName"/>
+        <result column="course_desc" property="courseDesc"/>
+        <result column="course_size" property="courseSize"/>
+        <result column="create_time" property="createTime"/>
+        <result column="last_edit_time" property="lastEditTime"/>
+        <association property="teacher" column="teacher_id" javaType="com.bjtu.edu.entity.Teacher">
+            <id column="teacher_id" property="teacherId"/>
+            <result column="teacher_name" property="teacherName"/>
+            <result column="gender" property="gender"/>
+            <result column="teacher_desc" property="teacherDesc"/>
+            <result column="profile_img" property="profileImg"/>
+        </association>
+    </resultMap>
+
+    <select id="queryCourse" resultMap="courseMap">
+        SELECT
+            c.course_id, c.course_name, c.course_desc, t.teacher_id, t.teacher_name, t.teacher_desc, t.profile_img, c.course_size, c.create_time, c.last_edit_time
+        FROM
+            course c ,
+            teacher t
+        WHERE
+            c.teacher_id = t.teacher_id
+    </select>
+
+    <select id="queryCourseById" resultMap="courseMap" parameterType="Long">
+        SELECT
+            c.course_id, c.course_name, c.course_desc, t.teacher_id, t.teacher_name, t.teacher_desc, t.profile_img, c.course_size, c.create_time, c.last_edit_time
+        FROM course c , teacher t
+        WHERE c.course_id = #{courseId} AND c.teacher_id = t.teacher_id
+    </select>
+
+    <select id="queryCourseByTeacherId" resultMap="courseMap">
+        SELECT
+            c.course_id, c.course_name, c.course_desc, t.teacher_id, t.teacher_name, t.teacher_desc, c.course_size, c.create_time, c.last_edit_time
+        FROM course c , teacher t
+        WHERE c.teacher_id = #{teacher.teacherId} AND c.teacher_id = t.teacher_id
+    </select>
+
+    <insert id="addCourse" useGeneratedKeys="true" keyColumn="course_id" keyProperty="courseId">
+        INSERT INTO
+            course
+        (course_id, course_name, course_desc, teacher_id, course_size, create_time)
+        VALUES
+        (#{courseId},#{courseName},#{courseDesc},#{teacher.teacherId},#{courseSize},#{createTime})
+    </insert>
+
+    <update id="modifyCourse" parameterType="com.bjtu.edu.entity.Course">
+        UPDATE course
+        <set>
+            <if test="courseName != null">course_name=#{courseName},</if>
+            <if test="courseDesc != null">course_desc=#{courseDesc},</if>
+            <if test="teacher != null">teacher_id=#{teacher.teacherId},</if>
+            <if test="courseSize != null">course_size=#{courseSize},</if>
+            <if test="lastEditTime != null">last_edit_time=#{lastEditTime},</if>
+        </set>
+        where course_id=#{courseId}
+    </update>
+
+    <delete id="deleteCourse">
+        DELETE FROM
+            course
+        WHERE
+            course_id = #{courseId}
+    </delete>
+</mapper>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>授课列表</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css">
+  <link rel="stylesheet" href="../../../resources/css/global.css">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black">
+  <div class="layui-container">
+    <a class="fly-logo">
+      <img src="../../../resources/img/logo.png" alt="layui">
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li class="layui-nav-item layui-this">
+        <a class="teacher-index"><i class="iconfont icon-jiaoliu"></i>作业管理系统-教师界面</a>
+      </li>
+    </ul>
+    <ul class="layui-nav fly-nav-user">
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" id="cite-name"></cite>
+          <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：教师"></i>
+          <img src="" alt="" id="profileImg">
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="/teacher/set"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd><a class="teacher-index"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a href="/home/logout" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="layui-hide-xs">
+  <div class="fly-panel fly-column">
+    <div class="layui-container">
+      <ul class="layui-clear">
+        <li><a class="teacher-index">首页</a></li>
+        <li class="layui-this"><a href="/teacher/course">授课列表</a></li>
+        <li><a id="listHomework">作业列表</a></li>
+        <li><a href="/teacher/studentHomeworkList">作业提交情况</a></li>
+        <li class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><span class="fly-mid"></span></li>
+      </ul>
+
+      <div class="fly-column-right layui-hide-xs">
+        <a href="/teacher/add" class="layui-btn">发布作业</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="layui-container fly-marginTop">
+  <span class="layui-breadcrumb">
+    <a><cite>授课列表</cite></a>
+  </span>
+  <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>授课列表</legend>
+  </fieldset>
+
+  <div style="padding: 20px; background-color: #F2F2F2;">
+    <div class="layui-row layui-col-space15" id="course-list">
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer">
+  <p>作业管理系统 2020 &copy; <a target="_blank">By YSP</a></p>
+</div>
+
+<script src="../../../resources/layuiadmin/layui/layui.js"></script>
+<script src="../../../resources/js/common.js"></script>
+<script>
+  layui.use(['element', 'util'], function(){
+    var $ = layui.jquery
+        ,util = layui.util;
+
+    //访问后台，获取教师信息
+    $.getJSON('/teacher/getTeacherInfo', function(data) {
+      if (data.success) {
+        //获取后台传递过来的教师信息
+        var teacher = data.teacher;
+
+        //判断从后台传入的图片流是否为空，
+        //如果为空，给img标签添加noImage的图片路径
+        //如果不为空，给img标签添加后台传入的图片路径
+        if (teacher.profileImg != null){
+          $('#profileImg').attr('src', teacher.profileImg);
+        }else {
+          $('#profileImg').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+        }
+
+        //根据name、Id或Class名称为相应标签里的内容添加值
+        //html-替换标签里的内容
+        //append-在标签原有内容的末尾添加新的内容
+        //attr-给标签添加新的属性值
+        $('#cite-name').html(teacher.teacherName);
+        $('#listHomework').attr('href', '/teacher/homework?teacherId=' + teacher.teacherId);
+        $('.teacher-index').attr('href', '/teacher/index?teacherId=' + teacher.teacherId);
+      }
+    });
+
+    getCourseList();
+
+    //获取课程列表
+    function getCourseList(){
+      $.get('/teacher/listCourseMap', function(res) {
+        if (res.success){
+          var tempHtml = '';
+          var createTime;
+          // 若访问成功，则依据后台传递过来的课程信息动态拼接html
+          res.courseList.map(function (item) {
+            //日期格式转换函数，将后台传来的datetime类型的值转成所需的日期格式
+            //util-Layui的工具集
+            createTime = util.toDateString(item.createTime, "yyyy-MM-dd HH:mm");
+            tempHtml += ''
+                    + '<div class="layui-col-md6">'
+                    + '<div class="layui-card">'
+                    + '<div class="layui-card-header">'
+                    + '<div class="layui-col-md11">'
+                    + '<h2>'
+                    + item.courseName
+                    + '</h2>'
+                    + '</div>'
+                    + '<div class="layui-col-md1">'
+                    + '<a href="/teacher/courseInfo?courseId='
+                    + item.courseId
+                    + '">'
+                    + '>>></a>'
+                    + '</div>'
+                    + '</div>'
+                    + '<div class="layui-card-body">'
+                    + '<fieldset class="layui-elem-field">'
+                    + '<legend>'
+                    + '课程容量'
+                    + '</legend>'
+                    + '<div class="layui-field-box">'
+                    + item.courseSize + ' 人'
+                    + '</div>'
+                    + '</fieldset>'
+                    + '<hr class="layui-bg-blue">'
+                    + '<fieldset class="layui-elem-field">'
+                    + '<legend>'
+                    + '课程简介'
+                    + '</legend>'
+                    + '<div class="layui-field-box">'
+                    + item.courseDesc
+                    + '</div>'
+                    + '</fieldset>'
+                    + '<hr class="layui-bg-green">'
+                    + '<blockquote class="layui-elem-quote layui-quote-nm">'
+                    + createTime
+                    + '</blockquote>'
+                    + '</div>'
+                    + '</div>'
+                    + '</div>';
+          });
+          //append-在标签原有内容的末尾添加新的内容
+          $('#course-list').append(tempHtml);
+        }
+      });
+    }
+
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>作业管理系统登录</title>
+		<link rel="stylesheet" href="resources/layuiadmin/layui/css/layui.css" media="all"/>
+		<link rel="stylesheet" href="resources/css/login.css" media="all"/>
+		<style>
+			/* 覆盖原框架样式 */
+			.layui-elem-quote{background-color: inherit!important;}
+			.layui-input, .layui-select, .layui-textarea{background-color: inherit; padding-left: 30px;}
+		</style>
+	</head>
+	<body>
+		<!-- Head -->
+		<div class="layui-fluid">
+			<div class="layui-row layui-col-space15">
+				<div class="layui-col-sm12 layui-col-md12 zyl_mar_01">
+					<blockquote class="layui-elem-quote">作业管理系统</blockquote>
+				</div>
+			</div>
+		</div>
+		<!-- Head End -->
+		
+		<!-- Carousel -->
+		<div class="layui-row">
+			<div class="layui-col-sm12 layui-col-md12">
+				<div class="layui-carousel zyl_login_height" id="zyllogin" lay-filter="zyllogin">
+					<div carousel-item="">
+						<div>
+							<div class="zyl_login_cont"></div>
+						</div>
+						<div>
+							<img src="resources/img/01.jpg" />
+						</div>
+						<div>
+							<div class="background">
+								<span></span><span></span><span></span>
+								<span></span><span></span><span></span>
+								<span></span><span></span><span></span>
+								<span></span><span></span><span></span>
+								<span></span><span></span><span></span>
+							</div>
+						</div>
+						<div>
+							<img src="resources/img/02.jpg" />
+						</div>
+						<div>
+							<img src="resources/img/03.jpg" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Carousel End -->
+		
+		<!-- Footer -->
+		<div class="layui-row">
+			<div class="layui-col-sm12 layui-col-md12 zyl_center zyl_mar_01">
+				© 2020 - 作业管理系统登录界面 || by bjtu.Ysp
+			</div>
+		</div>
+		<!-- Footer End -->
+
+		<!-- LoginForm -->
+		<div class="zyl_lofo_main">
+			<fieldset class="layui-elem-field layui-field-title zyl_mar_02">
+				<legend>欢迎登录 - 作业管理系统</legend>
+			</fieldset>
+			<div class="layui-row layui-col-space15">
+				<form class="layui-form zyl_pad_01" action="">
+					<div class="layui-col-sm12 layui-col-md12">
+						<div class="layui-form-item">
+							<input type="text" name="userId" id="userId" lay-verify="required|userId" autocomplete="off" placeholder="账号" class="layui-input">
+							<i class="layui-icon layui-icon-username zyl_lofo_icon"></i>
+						</div>
+					</div>
+					<div class="layui-col-sm12 layui-col-md12">
+						<div class="layui-form-item">
+							<input type="password" name="password" id="password" lay-verify="required|password" autocomplete="off" placeholder="密码" class="layui-input">
+							<i class="layui-icon layui-icon-password zyl_lofo_icon"></i>
+						</div>
+					</div>
+					<div class="layui-col-sm12 layui-col-md12">
+						<div class="layui-form-item">
+							<select name="type" id="type" lay-filter="">
+								<option value=""></option>
+								<option value="0" selected="">学生</option>
+								<option value="1">教师</option>
+								<option value="2">管理员</option>
+							</select>
+							<i class="layui-icon layui-icon-friends zyl_lofo_icon"></i>
+						</div>
+					</div>
+					<div class="layui-col-sm12 layui-col-md12">
+						<div class="layui-row">
+							<div class="layui-col-xs4 layui-col-sm4 layui-col-md4">
+								<div class="layui-form-item">
+									<input type="text" name="vercode" id="vercode" lay-verify="required|vercodes" autocomplete="off" placeholder="验证码" class="layui-input" maxlength="4">
+									<i class="layui-icon layui-icon-vercode zyl_lofo_icon"></i>
+								</div>
+							</div>
+							<div class="layui-col-xs4 layui-col-sm4 layui-col-md4">
+								<div class="zyl_lofo_vercode zylVerCode" onclick="zylVerCode()"></div>
+							</div>
+						</div>
+					</div>
+					<div class="layui-col-sm12 layui-col-md12">
+						<button class="layui-btn layui-btn-fluid" lay-submit="" lay-filter="login">立即登录</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<!-- LoginForm End -->
+		
+		
+		<!-- Jquery Js -->
+		<script type="text/javascript" src="resources/layuiadmin/lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+		<!-- Layui Js -->
+		<script type="text/javascript" src="resources/layuiadmin/layui/layui.js"></script>
+		<!-- Jqarticle Js -->
+		<script type="text/javascript" src="resources/js/assembly/jqarticle/jparticle.min.js"></script>
+		<!-- ZylVerificationCode Js-->
+		<script type="text/javascript" src="resources/js/assembly/zylVerificationCode/zylVerificationCode.js"></script>
+
+		<script src="resources/js/common.js"></script>
+
+		<script>
+			layui.use(['carousel', 'form'], function(){
+				var carousel = layui.carousel
+				,form = layui.form;
+				
+				//自定义验证规则
+				form.verify({
+					userId: function(value){
+						if(hasLetter(value) == true || isChina(value) == true){
+							return '账号不能含有英文字母或中文';
+						}
+					}
+					,password: [/^[\S]{5,12}$/,'密码必须5到12位，且不能出现空格']
+					,vercodes: function(value){
+						//获取验证码
+						var zylVerCode = $(".zylVerCode").html();
+						if(value!=zylVerCode){
+							return '验证码错误（区分大小写）';
+						}
+					}
+					,content: function(value){
+						layedit.sync(editIndex);
+					}
+				});
+				
+				//监听提交
+				form.on('submit(login)', function(data){
+					//用ajax时需要注意你的url接口、采用哪一种方式type获取，它的使用的哪种数据类型datatype
+					$.ajax({
+						url:'/home/login',
+						type:'get',
+						dataType:'json',
+						data:data.field,
+						beforeSend:function(){
+							//弹出的lodinng层
+							layer.load(2,{
+								shade:[0.5,"#02fff0"]
+							});
+						},
+						success:function(res){
+							if (res.redirect) {
+								window.location.href = res.url;
+							} else {
+								layer.msg("无法进入系统，输入的账号或密码错误");
+							}
+						},
+						error:function(){
+							//用户输入与接口内容不对应，显示文字
+							layer.msg("访问失败")
+						},
+						complete:function(){
+							//关掉loading
+							layer.closeAll("loading")
+						}
+					})
+					return false;//不会跳转到网址栏，只会跳转到你要的界面 一定要写。
+				});
+				
+				
+				//设置轮播主体高度
+				var zyl_login_height = $(window).height()/1.3;
+				var zyl_car_height = $(".zyl_login_height").css("cssText","height:" + zyl_login_height + "px!important");
+				
+				
+				//Login轮播主体
+			 	carousel.render({
+					elem: '#zyllogin'//指向容器选择器
+					,width: '100%' //设置容器宽度
+					,height:'zyl_car_height'
+					,arrow: 'always' //始终显示箭头
+					,anim: 'fade' //切换动画方式
+					,autoplay: true //是否自动切换false true
+					,arrow: 'hover' //切换箭头默认显示状态||不显示：none||悬停显示：hover||始终显示：always
+					,indicator: 'none' //指示器位置||外部：outside||内部：inside||不显示：none
+					,interval: '5000' //自动切换时间:单位：ms（毫秒）
+				});
+				
+				
+				//粒子线条
+				$(".zyl_login_cont").jParticle({
+					background: "rgba(0,0,0,0)",//背景颜色
+					color: "#fff",//粒子和连线的颜色
+					particlesNumber:100,//粒子数量
+					//disableLinks:true,//禁止粒子间连线
+					//disableMouse:true,//禁止粒子间连线(鼠标)
+					particle: {
+					    minSize: 1,//最小粒子
+					    maxSize: 3,//最大粒子
+					    speed: 30,//粒子的动画速度
+					 }
+				});
+				
+			});
+			
+		</script>
+	</body>
+</html>

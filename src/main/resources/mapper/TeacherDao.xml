@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjtu.edu.dao.TeacherDao">
+    <select id="queryTeacher" resultType="com.bjtu.edu.entity.Teacher">
+        SELECT teacher_id, password, teacher_name, profile_img, gender, email, teacher_desc, create_time, last_edit_time
+        FROM teacher
+    </select>
+
+    <select id="queryTeacherById" resultType="com.bjtu.edu.entity.Teacher">
+        SELECT teacher_id, password, teacher_name, profile_img, gender, email, teacher_desc, create_time, last_edit_time
+        FROM teacher
+        WHERE teacher_id = #{teacherId}
+    </select>
+
+    <insert id="addTeacher" useGeneratedKeys="true" keyColumn="clazz_id" keyProperty="clazzId">
+        INSERT INTO
+            teacher
+        (teacher_id, teacher_name, profile_img, gender, email, teacher_desc, create_time)
+        VALUES
+        (#{teacherId},#{teacherName},#{profileImg},
+         #{gender},#{email},
+         #{teacherDesc},#{createTime})
+    </insert>
+
+    <update id="modifyTeacher" parameterType="com.bjtu.edu.entity.Teacher"
+            keyProperty="teacher_id" useGeneratedKeys="true">
+        UPDATE teacher
+        <set>
+            <if test="password != null">password=#{password},</if>
+            <if test="teacherName != null">teacher_name=#{teacherName},</if>
+            <if test="profileImg != null">profile_img=#{profileImg},</if>
+            <if test="gender != null">gender=#{gender},</if>
+            <if test="email != null">email=#{email},</if>
+            <if test="teacherDesc != null">teacher_desc=#{teacherDesc},</if>
+            <if test="lastEditTime != null">last_edit_time=#{lastEditTime},</if>
+        </set>
+        WHERE teacher_id = #{teacherId}
+    </update>
+
+    <delete id="deleteTeacher">
+        DELETE FROM
+            teacher
+        WHERE
+            teacher_id = #{teacherId}
+    </delete>
+</mapper>

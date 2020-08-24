@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjtu.edu.dao.HomeworkDao">
+    <resultMap id="homeworkMap" type="com.bjtu.edu.entity.Homework">
+        <id column="homework_id" property="homeworkId"/>
+        <result column="homework_name" property="homeworkName"/>
+        <result column="homework_desc" property="homeworkDesc"/>
+        <result column="homework_file" property="homeworkFile"/>
+        <result column="submit_time" property="submitTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="last_edit_time" property="lastEditTime"/>
+        <association property="course" column="course_id" javaType="com.bjtu.edu.entity.Course">
+            <id column="course_id" property="courseId"/>
+            <result column="course_name" property="courseName"/>
+            <result column="teacher_id" property="teacher.teacherId"/>
+            <result column="teacher_name" property="teacher.teacherName"/>
+        </association>
+    </resultMap>
+
+    <select id="queryHomework" resultMap="homeworkMap">
+        SELECT
+            h.homework_id, h.homework_name, h.homework_desc, c.course_id, c.course_name, h.homework_file, h.submit_time, h.create_time, h.last_edit_time
+        FROM
+            homework h ,
+            course c
+        WHERE
+            h.course_id = c.course_id
+    </select>
+
+    <select id="queryHomeworkById" resultMap="homeworkMap" parameterType="Long">
+        SELECT
+            h.homework_id, h.homework_name, h.homework_desc, c.course_id, c.course_name, h.homework_file, h.submit_time, h.create_time, h.last_edit_time
+        FROM
+            homework h ,
+            course c
+        WHERE
+            h.homework_id = #{homeworkId} AND h.course_id = c.course_id
+    </select>
+
+    <select id="queryHomeworkByCourseId" resultMap="homeworkMap">
+        SELECT
+            h.homework_id, h.homework_name, h.homework_desc, c.course_id, c.course_name, h.homework_file, h.submit_time, h.create_time, h.last_edit_time
+        FROM
+            homework h ,
+            course c
+        WHERE
+            h.course_id = #{course.courseId} AND h.course_id = c.course_id
+    </select>
+
+    <select id="queryHomeworkByTeacherId" resultMap="homeworkMap">
+        SELECT
+            h.homework_id, h.homework_name, h.homework_desc, c.course_id, c.course_name, h.homework_file, h.submit_time, h.create_time, h.last_edit_time
+        FROM
+            homework h ,
+            course c
+        WHERE
+            c.teacher_id = #{course.teacher.teacherId} AND h.course_id = c.course_id
+    </select>
+
+    <select id="queryHomeworkByStudentId" resultMap="homeworkMap">
+        SELECT
+            h.homework_id, h.homework_name, h.submit_time, h.create_time, c.course_id, c.course_name, t.teacher_id, t.teacher_name
+        FROM
+            student_course sc ,
+            homework h ,
+            course c ,
+            teacher t
+        WHERE
+            sc.student_id = #{studentId}
+          AND sc.course_id = c.course_id
+          AND h.course_id = c.course_id
+          AND c.teacher_id = t.teacher_id
+    </select>
+
+    <insert id="addHomework" useGeneratedKeys="true" keyColumn="homework_id" keyProperty="homeworkId">
+        INSERT INTO
+            homework
+        (homework_id, homework_name, homework_desc, course_id, homework_file, submit_time, create_time)
+        VALUES
+        (#{homeworkId},#{homeworkName},#{homeworkDesc},#{course.courseId},#{homeworkFile},#{submitTime},#{createTime})
+    </insert>
+
+    <update id="modifyHomework" parameterType="com.bjtu.edu.entity.Homework">
+        UPDATE homework
+        <set>
+            <if test="homeworkName != null">homework_name=#{homeworkName},</if>
+            <if test="homeworkDesc != null">homework_desc=#{homeworkDesc},</if>
+            <if test="homeworkFile != null">homework_file=#{homeworkFile},</if>
+            <if test="submitTime != null">submit_time=#{submitTime},</if>
+            <if test="course != null">course_id=#{course.courseId},</if>
+            <if test="lastEditTime != null">last_edit_time=#{lastEditTime},</if>
+        </set>
+        where homework_id=#{homeworkId}
+    </update>
+
+    <delete id="deleteHomework">
+        DELETE FROM
+            homework
+        WHERE
+            homework_id = #{homeworkId}
+    </delete>
+</mapper>

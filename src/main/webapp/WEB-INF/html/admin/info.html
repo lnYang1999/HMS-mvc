@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>设置我的资料</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+
+  <div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">设置我的资料</div>
+          <div class="layui-card-body" pad15>
+            <form class="layui-form" action="" lay-filter="adminInfo">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">原头像</label>
+                    <img id="initImg" src="" alt="" width="150" height="150">
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">我的角色</label>
+                  <div class="layui-input-inline">
+                    <select name="role" lay-verify="">
+                      <option value="1" selected>管理员</option>
+                      <option value="2" disabled>学生</option>
+                      <option value="3" disabled>教师</option>
+                    </select>
+                  </div>
+                  <div class="layui-form-mid layui-word-aux">当前角色不可更改为其它角色</div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">账号</label>
+                  <div class="layui-input-inline">
+                    <input type="text" name="adminId" readonly class="layui-input">
+                  </div>
+                  <div class="layui-form-mid layui-word-aux">不可修改。一般用于后台登入填写</div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">姓名</label>
+                  <div class="layui-input-inline">
+                    <input type="text" name="adminName" lay-verify="required|adminName" autocomplete="off" class="layui-input">
+                  </div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">性别</label>
+                  <div class="layui-input-block">
+                    <input type="radio" name="gender" value="男" title="男">
+                    <input type="radio" name="gender" value="女" title="女">
+                  </div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">新头像</label>
+                  <div class="layui-input-inline">
+                    <input type="file" name="profileImg">
+                  </div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">邮箱</label>
+                  <div class="layui-input-inline">
+                    <input type="text" name="email" value="" lay-verify="email" autocomplete="off" class="layui-input">
+                  </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                  <label class="layui-form-label">简介</label>
+                  <div class="layui-input-block">
+                    <textarea name="adminDesc" placeholder="请输入内容" class="layui-textarea"></textarea>
+                  </div>
+                </div>
+                <div class="layui-form-item">
+                  <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit="" lay-filter="modifyInfo">确认修改</button>
+                  </div>
+                </div>
+            </form>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../resources/layuiadmin/layui/layui.js"></script>
+  <script src="../../../resources/js/common.js"></script>
+  <script>
+  layui.config({
+    base: '../../../resources/layuiadmin/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index' //主入口模块
+  }).use(['index', 'set', 'form'], function(){
+     var $ = layui.$
+    ,form = layui.form
+    ,layer = layui.layer;
+
+    form.render(null, 'adminInfo');
+
+    /* 自定义验证规则 */
+    form.verify({
+      adminName: function(value){
+        if(containsNumber(value) === true){
+          return '管理员姓名不能含有数字';
+        }
+      }
+    });
+
+    var initUrl = '/admin/getAdminInfo';
+
+    //访问后台，获取管理员信息
+    $.getJSON(initUrl, function(data) {
+        if (data.success) {
+            //获取后台传递过来的管理员信息
+            var admin = data.admin;
+            $('#initImg').attr('src', admin.profileImg);
+            $('input[name="adminId"]').val(admin.adminId);
+            $('input[name="adminName"]').val(admin.adminName);
+            $('input[name="email"]').val(admin.email);
+            $('textarea[name="adminDesc"]').text(admin.adminDesc);
+        }
+    });
+
+    /* 监听提交 */
+    form.on('submit(modifyInfo)', function(data){
+        // 获取缩略图文件流
+        var adminImg = $('input[name="profileImg"]')[0].files[0];
+        var admin = {};
+
+        admin.adminId = $('input[name="adminId"]').val();
+        admin.adminName = $('input[name="adminName"]').val();
+        admin.gender = $('input[name="gender"]:checked').val();
+        admin.email = $('input[name="email"]').val();
+        admin.adminDesc = $('textarea[name="adminDesc"]').val();
+
+        var formData = new FormData();
+        formData.append('adminImg', adminImg);
+        formData.append('adminStr',JSON.stringify(admin));
+
+        //用ajax时需要注意你的url接口、采用哪一种方式type获取，它的使用的哪种数据类型datatype
+        $.ajax({
+            url:'/admin/modifyAdmin',
+            type:'post',
+            data:formData,
+            contentType : false,
+            processData : false,
+            success:function(res){
+                if (res.success){
+                    layer.msg("修改个人信息成功");
+                    setTimeout(function(){  //使用  setTimeout（）方法设定定时2000毫秒
+                        window.location.reload();//页面刷新
+                    },2000);
+                }else {
+                    layer.msg("修改个人信息失败" + res.errMsg);
+                }
+            }
+        })
+        return false;
+    });
+
+  });
+  </script>
+</body>
+</html>

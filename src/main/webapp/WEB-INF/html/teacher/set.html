@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>帐号设置</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css">
+  <link rel="stylesheet" href="../../../resources/css/global.css">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black">
+  <div class="layui-container">
+    <a class="fly-logo">
+      <img src="../../../resources/img/logo.png" alt="layui">
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li class="layui-nav-item layui-this">
+        <a class="teacher-index"><i class="iconfont icon-jiaoliu"></i>作业管理系统-教师界面</a>
+      </li>
+    </ul>
+    <ul class="layui-nav fly-nav-user">
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" id="cite-name"></cite>
+          <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：教师"></i>
+          <img src="" alt="" id="profileImg">
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="/teacher/set"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd><a class="teacher-index"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a href="/home/logout" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="layui-container fly-marginTop fly-user-main">
+  <ul class="layui-nav layui-nav-tree layui-inline" lay-filter="user">
+    <li class="layui-nav-item">
+      <a class="teacher-index">
+        <i class="layui-icon">&#xe609;</i>
+        我的主页
+      </a>
+    </li>
+    <li class="layui-nav-item layui-this">
+      <a href="/teacher/set">
+        <i class="layui-icon">&#xe620;</i>
+        基本设置
+      </a>
+    </li>
+  </ul>
+  
+  <div class="fly-panel fly-panel-user" pad20>
+    <div class="layui-tab layui-tab-brief" lay-filter="user">
+      <ul class="layui-tab-title" id="LAY_mine">
+        <li class="layui-this" lay-id="info">我的资料</li>
+        <li lay-id="pass">密码</li>
+      </ul>
+
+      <div class="layui-tab-content" style="padding: 20px 0;">
+        <div class=" layui-tab-item layui-show">
+          <form class="layui-form layui-form-pane" action="" lay-filter="teacherInfo">
+            <div class="layui-form-item">
+              <label class="layui-form-label">原头像</label>
+              <img id="initImg" src="" alt="" width="150" height="150">
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">我的角色</label>
+              <div class="layui-input-block">
+                <select name="role">
+                  <option value="1" disabled>管理员</option>
+                  <option value="2" disabled>学生</option>
+                  <option value="3" selected>教师</option>
+                </select>
+              </div>
+              <div class="layui-form-mid layui-word-aux">当前角色不可更改为其它角色</div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">账号</label>
+              <div class="layui-input-inline">
+                <input type="text" name="teacherId" readonly class="layui-input">
+              </div>
+              <div class="layui-form-mid layui-word-aux">不可修改。一般用于后台登入填写</div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">姓名</label>
+              <div class="layui-input-inline">
+                <input type="text" name="teacherName" lay-verify="required|teacherName" autocomplete="off" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">性别</label>
+              <div class="layui-input-block">
+                <input type="radio" name="gender" value="男" title="男">
+                <input type="radio" name="gender" value="女" title="女">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">新头像</label>
+              <div class="layui-input-inline">
+                <input type="file" name="profileImg">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">邮箱</label>
+              <div class="layui-input-block">
+                <input type="text" name="email" required lay-verify="email" autocomplete="off" value="" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+              <label class="layui-form-label">简介</label>
+              <div class="layui-input-block">
+                <textarea placeholder="介绍一下自己吧" name="teacherDesc" autocomplete="off" class="layui-textarea" style="height: 80px;"></textarea>
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <button class="layui-btn" lay-filter="modifyInfo" lay-submit="">确认修改</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="layui-form layui-form-pane layui-tab-item">
+          <form action="" lay-filter="mypass">
+            <div class="layui-form-item">
+              <label class="layui-form-label">当前密码</label>
+              <div class="layui-input-inline">
+                <input type="password" name="oldPassword" lay-verify="required" lay-verType="tips" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">新密码</label>
+              <div class="layui-input-inline">
+                <input type="password" name="password" lay-verify="pass" lay-verType="tips" autocomplete="off" id="LAY_password" class="layui-input">
+              </div>
+              <div class="layui-form-mid layui-word-aux">6到16个字符</div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">确认密码</label>
+              <div class="layui-input-inline">
+                <input type="password" name="repassword" lay-verify="repass" lay-verType="tips" autocomplete="off" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <button class="layui-btn" lay-submit="" lay-filter="setmypass">确认修改</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="fly-footer">
+  <p>作业管理系统 2020 &copy; <a target="_blank">By YSP</a></p>
+</div>
+
+<script src="../../../resources/layuiadmin/layui/layui.js"></script>
+<script src="../../../resources/js/common.js"></script>
+<script>
+  layui.use(['element', 'form'], function(){
+    var $ = layui.jquery
+            ,form = layui.form
+            ,layer = layui.layer;
+
+    //表单渲染（必需的操作），需要在form标签里面添加lay-filter=''
+    form.render(null, 'teacherInfo');
+
+    //自定义验证规则
+    form.verify({
+      teacherName: function(value){
+        if(containsNumber(value) === true){
+          return '教师姓名不能含有数字';
+        }
+      }
+    });
+
+    //访问后台，获取教师信息
+    $.getJSON('/teacher/getTeacherInfo', function(data) {
+      if (data.success) {
+        //获取后台传递过来的教师信息
+        var teacher = data.teacher;
+
+        //判断从后台传入的图片流是否为空，
+        //如果为空，给img标签添加noImage的图片路径
+        //如果不为空，给img标签添加后台传入的图片路径
+        if (teacher.profileImg != null){
+          $('#profileImg').attr('src', teacher.profileImg);
+          $('#initImg').attr('src', teacher.profileImg);
+        }else {
+          $('#profileImg').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+          $('#initImg').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+        }
+
+        //根据name、Id或Class名称为相应标签里的内容添加值
+        //html-替换标签里的内容
+        //append-在标签原有内容的末尾添加新的内容
+        //attr-给标签添加新的属性值
+        $('#cite-name').html(teacher.teacherName);
+
+        $('input[name="teacherId"]').val(teacher.teacherId);
+        $('input[name="teacherName"]').val(teacher.teacherName);
+        $('input[name="email"]').val(teacher.email);
+        $('textarea[name="teacherDesc"]').text(teacher.teacherDesc);
+        $('.teacher-index').attr('href', '/teacher/index?teacherId=' + teacher.teacherId);
+      }
+    });
+
+    //监听提交
+    form.on('submit(modifyInfo)', function(){
+      // 获取缩略图文件流
+      var teacherImg = $('input[name="profileImg"]')[0].files[0];
+      var teacher = {};
+
+      teacher.teacherId = $('input[name="teacherId"]').val();
+      teacher.teacherName = $('input[name="teacherName"]').val();
+      teacher.gender = $('input[name="gender"]:checked').val();
+      teacher.email = $('input[name="email"]').val();
+      teacher.teacherDesc = $('textarea[name="teacherDesc"]').val();
+
+      var formData = new FormData();
+      formData.append('teacherImg', teacherImg);
+      formData.append('teacherStr',JSON.stringify(teacher));
+
+      //用ajax时需要注意你的url接口、采用哪一种方式type获取，它的使用的哪种数据类型datatype
+      $.ajax({
+        url:'/teacher/modifyTeacher',
+        type:'post',
+        data:formData,
+        contentType : false,
+        processData : false,
+        success:function(res){
+          if (res.success){
+            layer.msg("修改个人信息成功");
+            setTimeout(function(){  //使用  setTimeout（）方法设定定时2000毫秒
+              window.location.reload();//页面刷新
+            },2000);
+          }else {
+            layer.msg("修改个人信息失败" + res.errMsg);
+          }
+        }
+      })
+      return false;
+    });
+
+    //表单渲染（必需的操作），需要在form标签里面添加lay-filter=''
+    form.render(null, 'mypass');
+
+    //监听提交
+    form.on('submit(setmypass)', function() {
+      var oldPassword = $('input[name="oldPassword"]').val();
+      var newPassword = $('input[name="password"]').val();
+
+      var formData = new FormData();
+      formData.append('oldPassword', oldPassword);
+      formData.append('newPassword',newPassword);
+
+      //用ajax时需要注意你的url接口、采用哪一种方式type获取，它的使用的哪种数据类型datatype
+      $.ajax({
+        url:'/teacher/modifyPassword',
+        type:'post',
+        data:formData,
+        contentType : false,
+        processData : false,
+        success:function(res){
+          if (res.success){
+            layer.msg("修改密码成功");
+            setTimeout(function(){  //使用  setTimeout（）方法设定定时2000毫秒
+              window.location.reload();//页面刷新
+            },1000);
+          }else {
+            layer.msg("修改密码失败：" + res.errMsg);
+          }
+        }
+      })
+      return false;
+    });
+
+  });
+</script>
+
+</body>
+</html>

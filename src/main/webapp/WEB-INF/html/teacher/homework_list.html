@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>作业列表</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css">
+  <link rel="stylesheet" href="../../../resources/css/global.css">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black">
+  <div class="layui-container">
+    <a class="fly-logo">
+      <img src="../../../resources/img/logo.png" alt="layui">
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li class="layui-nav-item layui-this">
+        <a class="teacher-index"><i class="iconfont icon-jiaoliu"></i>作业管理系统-教师界面</a>
+      </li>
+    </ul>
+    <ul class="layui-nav fly-nav-user">
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" id="cite-name"></cite>
+          <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：教师"></i>
+          <img src="" alt="" id="profileImg">
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="/teacher/set"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd><a class="teacher-index"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a href="/home/logout" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="layui-hide-xs">
+  <div class="fly-panel fly-column">
+    <div class="layui-container">
+      <ul class="layui-clear">
+        <li><a class="teacher-index">首页</a></li>
+        <li><a href="/teacher/course">授课列表</a></li>
+        <li class="layui-this"><a>作业列表</a></li>
+        <li><a href="/teacher/studentHomeworkList">作业提交情况</a></li>
+        <li class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><span class="fly-mid"></span></li>
+      </ul>
+
+      <div class="fly-column-right layui-hide-xs">
+        <a href="/teacher/add" class="layui-btn">发布作业</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="layui-container fly-marginTop">
+  <div class="layui-row layui-col-space15">
+
+    <div class="layui-col-md12">
+      <div class="fly-panel detail-box" id="flyReply">
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+          <legend>作业信息列表</legend>
+        </fieldset>
+        <div class="layui-card-body">
+          <table class="layui-hide" id="homework-list" lay-filter="homework-list"></table>
+
+          <script type="text/html" id="operation">
+            <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+          </script>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="fly-footer">
+  <p>作业管理系统 2020 &copy; <a target="_blank">By YSP</a></p>
+</div>
+
+<script src="../../../resources/layuiadmin/layui/layui.js"></script>
+<script src="../../../resources/js/common.js"></script>
+<script>
+  layui.use(['element', 'table', 'laydate', 'form', 'util'], function(){
+    var $ = layui.jquery,
+        table = layui.table,
+        laydate = layui.laydate,
+        form = layui.form,
+        util = layui.util;
+
+    //获取一段url中的字段，
+    //如loacalhost:8080?courseId=1，getQueryString('courseId')则获取url中courseId的值
+    var teacherId = getQueryString('teacherId');
+
+    //访问后台，获取教师信息
+    $.getJSON('/teacher/getTeacherInfo', function(data) {
+      if (data.success) {
+        //获取后台传递过来的教师信息
+        var teacher = data.teacher;
+
+        //判断从后台传入的图片流是否为空，
+        //如果为空，给img标签添加noImage的图片路径
+        //如果不为空，给img标签添加后台传入的图片路径
+        if (teacher.profileImg != null){
+          $('#profileImg').attr('src', teacher.profileImg);
+        }else {
+          $('#profileImg').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+        }
+
+        //根据name、Id或Class名称为相应标签里的内容添加值
+        //html-替换标签里的内容
+        //append-在标签原有内容的末尾添加新的内容
+        //attr-给标签添加新的属性值
+        $('#cite-name').html(teacher.teacherName);
+        $('.teacher-index').attr('href', '/teacher/index?teacherId=' + teacher.teacherId);
+      }
+    });
+
+    //渲染layui的数据表格，需要在table标签里面添加lay-filter=''
+    table.render({
+      elem: '#homework-list'
+      ,id: 'homeworkTable'
+      ,url: '/teacher/listHomeworkByTeacherId?teacherId='+teacherId
+      ,title: '作业信息列表'
+      ,cols: [[
+        {field: 'homeworkId', width: 120, title: '作业ID号', sort: true, fixed: 'left'}
+        ,{field: 'homeworkName', width: 150, title: '作业名', sort: true}
+        ,{field: 'homeworkDesc', width: 250, title: '作业内容'}
+        ,{title: '课程号', width: 120, sort: true, templet: function(data){
+            return data.course.courseId;
+          }}
+        ,{title: '课程名', width: 150, sort: true, templet: function(data){
+            return data.course.courseName;
+          }}
+        ,{field: 'homeworkFile', title: '作业文件', width: 120, templet: function(res){
+            return '<button type="button" class="layui-btn layui-btn-normal layui-btn-sm" onclick="downloadHomework('+res.homeworkId+')"><i class="layui-icon layui-icon-download-circle"></i></button>';
+          }}
+        ,{field: 'submitTime', title: '作业提交截至时间', width: 200, sort: true}
+        ,{title: '创建时间', width: 160, templet: function(res){
+            return util.toDateString(res.createTime, "yyyy-MM-dd HH:mm");
+          }}
+        ,{title: '最近一次更新时间', width: 160, templet: function(res){
+            if (res.lastEditTime != null){
+              return util.toDateString(res.lastEditTime, "yyyy-MM-dd HH:mm");
+            }else {
+              return "暂未更新";
+            }
+          }}
+        ,{fixed: 'right', title: '操作', toolbar: '#operation', width: 160}
+      ]]
+      ,page: true
+    });
+
+    //监听工具条
+    table.on('tool(homework-list)', function(obj){
+      var data = obj.data;
+      if(obj.event === 'del'){
+        layer.confirm('真的删除行么', function(index){
+          delHomeworkById(data.homeworkId);
+          layer.close(index);
+        });
+      }else if(obj.event === 'edit'){
+        layer.open({
+          //layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）
+          type: 1,
+          title: "修改作业信息",
+          area: ['600px', '400px'],
+          content: $("#popUpdateHomework")//引用的弹出层的页面层的方式加载修改界面表单
+        });
+        //动态向表传递赋值可以参看文章进行修改界面的更新前数据的显示，当然也是异步请求的要数据的修改数据的获取
+        setFormValue(obj,data);
+      }
+    });
+
+    //日期时间选择器，#submitTime为时间选择标签的Id
+    laydate.render({
+      elem: '#submitTime'
+      ,type: 'datetime'
+      ,min: 0
+      ,format: 'yyyy年M月d日H时'
+    });
+
+    //表单渲染（必需的操作），需要在form标签里面添加lay-filter=''
+    form.render(null, 'modify-homework');
+
+    getCourseList();
+
+    // 获取课程列表
+    function getCourseList(){
+      $.get('/teacher/listCourseMap', function(res) {
+        if (res.success){
+          var tempHtml = '';
+          // 若访问成功，则依据后台传递过来的班级信息为表单元素赋值
+          res.courseList.map(function (item, index) {
+            tempHtml += '<option data-id="' + item.courseId + '">'
+                    + item.courseName + '</option>';
+          });
+          $('#course').html(tempHtml);
+          //渲染表单内的select标签
+          form.render('select');
+        }
+      });
+    }
+
+    //删除作业信息
+    function delHomeworkById(id) {
+      $.get("/teacher/deleteHomework?homeworkId=" + id,
+              function(res) {
+                if(res.success){
+                  layer.msg('删除成功');
+                  table.reload('homeworkTable', {//homeworkTable是组件名称,表格名
+                    page: {//page参数是指重新刷新后从第几页开始
+                      curr: 1 //重新从第 1 页开始
+                    }
+                  }, 'data');//data是默认值
+                }
+              });
+    }
+
+    //给表单里的元素赋值
+    function setFormValue(obj,data){
+      $('input[name="homeworkId"]').val(data.homeworkId);
+      $('input[name="homeworkName"]').val(data.homeworkName);
+      $('#submitTime').val(data.submitTime);
+      $('textarea[name="homeworkDesc"]').text(data.homeworkDesc);
+
+      form.on('submit(edit-homework)', function() {
+        var homework = {};
+
+        // 获取文件流
+        var homeworkFile = $('input[name="homeworkFile"]')[0].files[0];
+
+        homework.homeworkId = $('input[name="homeworkId"]').val();
+        homework.homeworkName = $('input[name="homeworkName"]').val();
+        homework.submitTime = $('#submitTime').val();
+        homework.homeworkDesc = $('textarea[name="homeworkDesc"]').val();
+        homework.course = {
+          courseId : $('#course').find('option').not(function () {
+            return !this.selected;
+          }).data('id')
+        };
+
+        var formData = new FormData();
+        formData.append('homeworkFile', homeworkFile);
+        formData.append('homeworkStr',JSON.stringify(homework));
+
+        $.ajax({
+          url:'/teacher/modifyHomework',
+          type:'post',
+          data:formData,
+          contentType : false,
+          processData : false,
+          cache : false,
+          success:function(res){
+            if (res.success){
+              layer.msg("修改作业信息成功");
+              table.reload('homeworkTable', {//homeworkTable是组件名称,表格名
+                page: {//page参数是指重新刷新后从第几页开始
+                  curr: 1 //重新从第 1 页开始
+                }
+              }, 'data');//data是默认值
+            }else {
+              layer.msg("修改作业信息失败" + res.errMsg);
+            }
+          }
+        })
+        return false;
+      })
+    }
+
+  });
+</script>
+
+<!--这里是弹出层的表单信息-->
+<!--style是在本页隐藏，只有点击编辑才会弹出-->
+<div class="layui-row" id="popUpdateHomework" style="display:none;">
+  <div class="layui-col-md10">
+    <form class="layui-form layui-from-pane" action="" style="margin-top:20px" lay-filter="modify-homework">
+      <div class="layui-form-item">
+        <label class="layui-form-label">作业号</label>
+        <div class="layui-input-block">
+          <input type="text" name="homeworkId" autocomplete="off" class="layui-input" readonly>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">作业标题</label>
+        <div class="layui-input-block">
+          <input type="text" name="homeworkName" lay-verify="required" autocomplete="off" class="layui-input">
+        </div>
+      </div>
+      <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">作业内容</label>
+        <div class="layui-input-block">
+          <textarea name="homeworkDesc" placeholder="请输入内容" class="layui-textarea"></textarea>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">作业文件</label>
+          <input type="file" name="homeworkFile">
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">所属课程</label>
+        <div class="layui-input-block">
+          <select id="course">
+          </select>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">截至时间</label>
+        <div class="layui-input-inline">
+          <input type="text" class="layui-input" id="submitTime" placeholder="yyyy年M月d日H时">
+        </div>
+      </div>
+      <div class="layui-form-item layui-layout-admin">
+        <div class="layui-input-block">
+          <button class="layui-btn" lay-submit="" lay-filter="edit-homework">立即提交</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

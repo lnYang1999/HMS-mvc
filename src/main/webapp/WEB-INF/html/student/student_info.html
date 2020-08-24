@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>选课学生列表</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../../resources/layuiadmin/layui/css/layui.css">
+  <link rel="stylesheet" href="../../../resources/css/global.css">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black">
+  <div class="layui-container">
+    <a class="fly-logo">
+      <img src="../../../resources/img/logo.png" alt="layui">
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li class="layui-nav-item layui-this">
+        <a class="student-index"><i class="iconfont icon-jiaoliu"></i>作业管理系统-学生界面</a>
+      </li>
+    </ul>
+    <ul class="layui-nav fly-nav-user">
+      <li class="layui-nav-item">
+        <a class="fly-nav-avatar" href="javascript:;">
+          <cite class="layui-hide-xs" id="cite-name"></cite>
+          <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：学生"></i>
+          <img src="" alt="" id="profileImg">
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="/student/set"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+          <dd><a class="student-index"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+          <hr style="margin: 5px 0;">
+          <dd><a href="/home/logout" style="text-align: center;">退出</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="layui-hide-xs">
+  <div class="fly-panel fly-column">
+    <div class="layui-container">
+      <ul class="layui-clear">
+        <li class="layui-this"><a class="student-index">首页</a></li>
+        <li><a href="/student/course">选课列表</a></li>
+        <li><a id="studentHomework-list">作业提交情况</a></li>
+        <li class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><span class="fly-mid"></span></li>
+      </ul>
+
+      <div class="fly-column-right layui-hide-xs">
+        <a id="submit-homework" class="layui-btn">提交作业</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="layui-container fly-marginTop">
+  <span class="layui-breadcrumb">
+    <a href="/student/course">选课列表</a>
+    <a id="course-info">课程详情</a>
+    <a><cite>选课学生列表</cite></a>
+  </span>
+  <div class="layui-row layui-col-space15">
+
+    <div class="layui-col-md12">
+      <div class="fly-panel detail-box" id="flyReply">
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+          <legend>学生信息列表</legend>
+        </fieldset>
+        <div class="layui-card-body">
+          <table class="layui-hide" id="student-list" lay-filter="student-list"></table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="fly-footer">
+  <p>作业管理系统 2020 &copy; <a target="_blank">By YSP</a></p>
+</div>
+
+<script src="../../../resources/layuiadmin/layui/layui.js"></script>
+<script src="../../../resources/js/common.js"></script>
+<script>
+  layui.use(['element', 'table', 'util'], function(){
+    var $ = layui.jquery, table = layui.table, util = layui.util;
+
+    //获取一段url中的字段
+    //如loacalhost:8080?courseId=1，getQueryString('courseId')则获取url中courseId的值
+    var courseId = getQueryString('courseId');
+
+    $('#course-info').attr('href','/student/courseInfo?courseId=' + courseId);
+
+    //访问后台，获取学生信息
+    $.getJSON('/student/getStudentInfo', function(data) {
+      if (data.success) {
+        //获取后台传递过来的教师信息
+        var student = data.student;
+
+        //判断从后台传入的图片流是否为空，
+        //如果为空，给img标签添加noImage的图片路径
+        //如果不为空，给img标签添加后台传入的图片路径
+        if (student.profileImg != null){
+          $('#profileImg').attr('src', student.profileImg);
+        }else {
+          $('#profileImg').attr('src', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597852452753&di=a753cb97410d9e6d3e312f303c326fdb&imgtype=0&src=http%3A%2F%2Fku.90sjimg.com%2Felement_origin_min_pic%2F01%2F38%2F98%2F25573ca2525d341.jpg');
+        }
+
+        //根据name、Id或Class名称为相应标签里的内容添加值
+        //html-替换标签里的内容
+        //append-在标签原有内容的末尾添加新的内容
+        //attr-给标签添加新的属性值
+        $('#submit-homework').attr('href','/student/submit?studentId='+student.studentId);
+        $('#cite-name').html(student.studentName);
+        $('#studentHomework-list').attr('href','/student/studentHomeworkList?studentId=' + student.studentId);
+        $('.student-index').attr('href', '/student/index?studentId=' + student.studentId);
+      }
+    });
+
+    //渲染layui的数据表格，需要在table标签里面添加lay-filter=''
+    table.render({
+      elem: '#student-list'
+      ,id: 'studentTable'
+      ,url: '/student/listStudentByCourseId?courseId='+courseId
+      ,title: '学生信息列表'
+      ,cols: [[
+        {title:'学生ID号', width:120, fixed: 'left', unresize: true, sort: true, templet: function(data){
+            return data.student.studentId;
+          }},
+        {title:'学生姓名', width:120, sort: true, templet: function(data){
+            return data.student.studentName;
+          }},
+        {title:'性别', width:80, templet: function(data){
+            return data.student.gender;
+          }},
+        {title:'邮箱', width:150, templet: function(data){
+            return '<em>'+ data.student.email +'</em>'
+          }},
+        {title:'简介', width:250, templet: function(data){
+            return data.student.studentDesc;
+          }},
+        {title:'班级ID号', width:120, sort: true, templet: function(data){
+            return data.student.clazz.clazzId;
+          }},
+        {title:'班级名', width:150, sort: true, templet: function(data){
+            return data.student.clazz.clazzDesc;
+          }},
+        {title:'创建时间', width:160, templet: function(res){
+            return util.toDateString(res.createTime, "yyyy-MM-dd HH:mm");
+          }},
+        {title:'最近一次更新时间', width:160, templet: function(res){
+            if (res.lastEditTime != null){
+              return util.toDateString(res.createTime, "yyyy-MM-dd HH:mm");
+            }else {
+              return "暂未更新";
+            }
+          }}
+        ]]
+      ,page: true
+    });
+
+  });
+</script>
+
+</body>
+</html>
